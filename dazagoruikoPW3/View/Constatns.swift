@@ -28,4 +28,9 @@ enum Constants {
     static let buttonsStackToAddButton: CGFloat = 12
     static let tableCornerRadius: CGFloat = 12
     static let tableOffset: CGFloat = 16
+    static let cellWrapRadius: CGFloat = 16
+    static let cellWrapOffsetV: CGFloat = 5
+    static let cellWrapOffsetH: CGFloat = 10
+    static let cellWishLabelOffset: CGFloat = 8
+
 }
