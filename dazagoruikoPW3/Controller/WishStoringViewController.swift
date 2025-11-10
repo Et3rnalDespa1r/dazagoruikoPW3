@@ -23,25 +23,38 @@ final class WishStoringViewController: UIViewController {
         table.dataSource = self
         table.separatorStyle = .none
         table.layer.cornerRadius = Constants.tableCornerRadius
-        
+        table.register(AddWishCell.self, forCellReuseIdentifier: AddWishCell.reuseId)
         table.register(WrittenWishCell.self, forCellReuseIdentifier: WrittenWishCell.reuseId)
         table.pin(to: view, Constants.tableOffset)
     }
 }
 
 extension WishStoringViewController: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return wishArray.count
-    }
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(
-            withIdentifier: WrittenWishCell.reuseId,
-            for: indexPath
-        )
-        guard let wishCell = cell as? WrittenWishCell else { return cell }
-        wishCell.configure(with: wishArray[indexPath.row])
-        return wishCell
+    func numberOfSections(in tableView: UITableView) -> Int {
+        2
     }
 
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        switch section {
+        case 0: return 1
+        case 1: return wishArray.count
+        default: return 0
+        }
+    }
+
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        switch indexPath.section {
+        case 0:
+            let cell = tableView.dequeueReusableCell(withIdentifier: AddWishCell.reuseId, for: indexPath) as! AddWishCell
+            return cell
+        case 1:
+            let cell = tableView.dequeueReusableCell(withIdentifier: WrittenWishCell.reuseId, for: indexPath) as! WrittenWishCell
+            cell.configure(with: wishArray[indexPath.row])
+            return cell
+        default:
+            return UITableViewCell()
+        }
+    }
 }
+
 

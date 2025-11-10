@@ -159,7 +159,6 @@ final class WishMakerViewController: UIViewController {
     }
 
 
-
     // MARK: - Actions
 
     private func updateBackgroundColor() {
