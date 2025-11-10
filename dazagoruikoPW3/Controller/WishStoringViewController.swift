@@ -6,60 +6,94 @@
 //
 
 import UIKit
+
 final class WishStoringViewController: UIViewController {
-    
-    private var wishArray: [String] = ["I wish to add cells to the table"]
-    private let table: UITableView = UITableView(frame: .zero)
-    
+
+    private let defaults = UserDefaults.standard
+    private var wishArray: [String] = []
+    private let table = UITableView(frame: .zero)
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .blue
         configureTable()
+        loadWishes()
     }
-    
+
     private func configureTable() {
         view.addSubview(table)
-        table.backgroundColor = .red
-        table.dataSource = self
-        table.separatorStyle = .none
-        table.layer.cornerRadius = Constants.tableCornerRadius
         table.register(AddWishCell.self, forCellReuseIdentifier: AddWishCell.reuseId)
         table.register(WrittenWishCell.self, forCellReuseIdentifier: WrittenWishCell.reuseId)
-        table.pin(to: view, Constants.tableOffset)
+        table.dataSource = self
+        table.delegate = self
+        table.separatorStyle = .none
+        table.backgroundColor = .red
+        table.layer.cornerRadius = 12
+        table.clipsToBounds = true
+        table.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            table.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            table.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            table.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            table.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16)
+        ])
+        table.rowHeight = UITableView.automaticDimension
+        table.estimatedRowHeight = 100
+        table.keyboardDismissMode = .onDrag
+    }
+
+    private func loadWishes() {
+        if let saved = defaults.array(forKey: Constants.wishesKey) as? [String] {
+            wishArray = saved
+        }
+        table.reloadData()
+    }
+
+    private func persist() {
+        defaults.set(wishArray, forKey: Constants.wishesKey)
     }
 }
 
 extension WishStoringViewController: UITableViewDataSource {
-    func numberOfSections(in tableView: UITableView) -> Int {
-        2
-    }
+    func numberOfSections(in tableView: UITableView) -> Int { 2 }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        switch section {
-        case 0: return 1
-        case 1: return wishArray.count
-        default: return 0
-        }
+        section == 0 ? 1 : wishArray.count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        switch indexPath.section {
-        case 0:
+        if indexPath.section == 0 {
             let cell = tableView.dequeueReusableCell(withIdentifier: AddWishCell.reuseId, for: indexPath) as! AddWishCell
             cell.addWish = { [weak self] text in
-                guard let self = self else { return }
+                guard let self else { return }
                 self.wishArray.append(text)
+                self.persist()
                 self.table.reloadData()
             }
             return cell
-        case 1:
+        } else {
             let cell = tableView.dequeueReusableCell(withIdentifier: WrittenWishCell.reuseId, for: indexPath) as! WrittenWishCell
             cell.configure(with: wishArray[indexPath.row])
             return cell
-        default:
-            return UITableViewCell()
         }
     }
 }
 
+extension WishStoringViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        indexPath.section == 1
+    }
+
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        guard indexPath.section == 1 else { return nil }
+        let delete = UIContextualAction(style: .destructive, title: "Delete") { [weak self] _,_,done in
+            guard let self else { return }
+            self.wishArray.remove(at: indexPath.row)
+            self.persist()
+            tableView.deleteRows(at: [indexPath], with: .automatic)
+            done(true)
+        }
+        return UISwipeActionsConfiguration(actions: [delete])
+    }
+}
 

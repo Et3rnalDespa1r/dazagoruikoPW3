@@ -32,5 +32,5 @@ enum Constants {
     static let cellWrapOffsetV: CGFloat = 5
     static let cellWrapOffsetH: CGFloat = 10
     static let cellWishLabelOffset: CGFloat = 8
-
+    static let wishesKey: String = "wishes_key"
 }
