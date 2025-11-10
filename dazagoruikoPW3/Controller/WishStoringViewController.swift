@@ -46,6 +46,11 @@ extension WishStoringViewController: UITableViewDataSource {
         switch indexPath.section {
         case 0:
             let cell = tableView.dequeueReusableCell(withIdentifier: AddWishCell.reuseId, for: indexPath) as! AddWishCell
+            cell.addWish = { [weak self] text in
+                guard let self = self else { return }
+                self.wishArray.append(text)
+                self.table.reloadData()
+            }
             return cell
         case 1:
             let cell = tableView.dequeueReusableCell(withIdentifier: WrittenWishCell.reuseId, for: indexPath) as! WrittenWishCell
