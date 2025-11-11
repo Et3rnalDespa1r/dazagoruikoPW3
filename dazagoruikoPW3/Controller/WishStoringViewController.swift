@@ -59,16 +59,20 @@ final class WishStoringViewController: UIViewController {
         alert.addTextField { $0.text = old }
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         alert.addAction(UIAlertAction(title: "Save", style: .default, handler: { [weak self] _ in
-            guard
-                let self,
-                let t = alert.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines),
-                !t.isEmpty
-            else { return }
+            guard let self,
+                  let t = alert.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines),
+                  !t.isEmpty else { return }
             self.wishArray[indexPath.row] = t
             self.persist()
             self.table.reloadRows(at: [indexPath], with: .automatic)
         }))
         present(alert, animated: true)
+    }
+
+    private func share(text: String, sourceView: UIView) {
+        let vc = UIActivityViewController(activityItems: [text], applicationActivities: nil)
+        vc.popoverPresentationController?.sourceView = sourceView
+        present(vc, animated: true)
     }
 }
 
@@ -125,16 +129,25 @@ extension WishStoringViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView,
                    leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath)
     -> UISwipeActionsConfiguration? {
-        guard indexPath.section == 1 else { return nil }
+        guard indexPath.section == 1,
+              let cell = tableView.cellForRow(at: indexPath) else { return nil }
+
         let edit = UIContextualAction(style: .normal, title: "Edit") { [weak self] _,_,done in
             self?.editWish(at: indexPath)
             done(true)
         }
         edit.backgroundColor = .systemBlue
-        let cfg = UISwipeActionsConfiguration(actions: [edit])
+
+        let shareAction = UIContextualAction(style: .normal, title: "Share") { [weak self] _,_,done in
+            guard let self else { return }
+            let text = self.wishArray[indexPath.row]
+            self.share(text: text, sourceView: cell)
+            done(true)
+        }
+        shareAction.backgroundColor = .systemGreen
+
+        let cfg = UISwipeActionsConfiguration(actions: [shareAction, edit])
         cfg.performsFirstActionWithFullSwipe = false
         return cfg
     }
 }
-
-
